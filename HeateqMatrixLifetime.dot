@@ -1,0 +1,44 @@
+digraph G {
+	#rankdir=LR;
+	compound=true;
+	#pack=true
+	node [shape=record, fontsize=25];
+	#ratio=compress;
+	#size="30,3"
+	subgraph cluster_u {
+		color=none
+		u [label="{u | AllCells() | Identity}"];
+	}
+
+	subgraph cluster_ifluxes {
+		label="Interior fluxes";
+		fontsize=30;
+		Grad [label="{Gradient(u) | InteriorFaces() | Gradient \{-1,1\}}"];
+		"-itrans" [label="{-trans*A | InteriorFaces() | Interior flux}"];
+		ExtendInterior [label="{Extend | AllFaces() | Interior flux On AllFaces()}"];
+
+	}
+
+	subgraph cluster_bfluxes {
+		label="Boundary fluxes";
+		fontsize=30;
+		On [label="{On | dir_cells | u On dir_cells}"];
+		"dir_trans" [label="{dir_trans*sign*A | dir_cells | Boundary flux}"];
+		ExtendBFaces [label="{Extend | BoundaryFaces() | Boundary flux On BoundaryFaces()}"];
+		ExtendAllFaces [label="{Extend | AllFaces() | Boundary flux On AllFaces()}"];
+
+	}
+
+		u -> Grad -> "-itrans" -> ExtendInterior;
+		u -> On -> "dir_trans" -> ExtendBFaces -> ExtendAllFaces;
+		ExtendAllFaces -> fluxes;
+		ExtendInterior -> fluxes;
+		fluxes -> divergence -> "(dt / (cv * vol)) * A"
+
+	subgraph cluster_end {
+		color=none;
+		fluxes [label="{Interior fluxes + Boundary fluxes | AllFaces() | All fluxes}"];
+		divergence [label="{Divergence | AllCells() | Change in all cells}"];
+		"(dt / (cv * vol)) * A" [label="{(dt / (cv * vol))*A | AllCells() | Scale by timestep and conductivity}"];
+	}
+}

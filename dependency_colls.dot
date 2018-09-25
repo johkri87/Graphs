@@ -1,0 +1,128 @@
+digraph G {
+	compound=true;
+	nodesep=auto;
+	splines=true;
+	# Output
+	residual [fontsize=40 fillcolor="#FFAAAA" style=filled];
+	ratio="1.35,1"
+	# External input
+	itrans [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	vol [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	cv [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"dir_cells" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"AllFaces()" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"dir_val" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"dir_sign" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"dir_trans" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+	"BoundaryFaces()" [fontsize=40 fillcolor="#AAAAFF" style=filled];
+
+	u [fontsize=40 fillcolor="#AAAAAA" style=filled];
+	dt [fontsize=40 fillcolor="#AAAAAA" style=filled];
+	u0 [fontsize=40 fillcolor="#AAAAAA" style=filled];
+
+	# Variables
+	ifluxes [fontsize=40 fillcolor="#DFDFDF" style=filled]
+	bfluxes [fontsize=40 fillcolor="#DFDFDF" style=filled]
+	fluxes [fontsize=40 fillcolor="#DFDFDF" style=filled]
+	u_dirbdycells [fontsize=40 fillcolor="#DFDFDF" style=filled]
+	dir_fluxes [fontsize=40 fillcolor="#DFDFDF" style=filled]
+
+
+	node [fontsize=40 fillcolor=white style=filled width=0.5 height=1.1]
+	edge [fontsize=40]
+	graph [fontsize=45]
+
+
+subgraph cluster_outer {
+	color=white
+	subgraph cluster_1 {
+		u;
+	}
+	subgraph cluster_2 {
+		rank="max"
+		u0;
+		dir_trans;
+		dt;
+		cv;
+		vol;
+		dir_cells;
+		dir_val;
+		dir_sign;
+		itrans;
+		"BoundaryFaces()";
+		"AllFaces()";
+	}
+}
+
+	subgraph cluster_computeResidual {
+		color=white;
+		style=filled;
+		fillcolor="#F1F1F1";
+		#ifluxes -> "computeInteriorFlux(u)" -> u;
+		ifluxes;
+		#bfluxes -> "computeBoundaryFlux(u)" -> u;
+		bfluxes;
+		fluxes -> "(ifluxes Extend AllFaces()) + (bfluxes Extend AllFaces())";
+		"(ifluxes Extend AllFaces()) + (bfluxes Extend AllFaces())" -> "(ifluxes Extend AllFaces())";
+		"(ifluxes Extend AllFaces()) + (bfluxes Extend AllFaces())" -> "(bfluxes Extend AllFaces())";
+		"(bfluxes Extend AllFaces())" -> {bfluxes, "AllFaces()"};
+		"(ifluxes Extend AllFaces())" -> {ifluxes, "AllFaces()"};
+		residual -> "u - u0 + (dt / (cv * vol)) * Divergence(fluxes)";
+		"u - u0 + (dt / (cv * vol)) * Divergence(fluxes)" -> {"u - u0", "(dt / (cv * vol)) * Divergence(fluxes)"};
+		"u - u0" -> u
+		"u - u0" -> u0
+		"(dt / (cv * vol)) * Divergence(fluxes)" -> "(dt / (cv * vol))";
+		"(dt / (cv * vol))" -> dt
+		"(dt / (cv * vol))" -> "(cv * vol)";
+		"(cv * vol)" -> cv;
+		"(cv * vol)" -> vol;
+		"(dt / (cv * vol)) * Divergence(fluxes)" -> "Divergence(fluxes)";
+		"Divergence(fluxes)" -> "fluxes"
+		label = "computeResidual"
+	}
+
+	#subgraph cluster_start {
+	#	u;
+		#u0;
+		#dir_trans;
+		#dt;
+		#cv;
+		#vol;
+		#dir_cells;
+		#dir_val;
+		#dir_sign;
+		#itrans;
+		#"BoundaryFaces()";
+		#"AllFaces()";
+#		label = "Setup"
+	#}
+
+	subgraph cluster_computeInteriorFlux {
+		color=white;
+		style=filled;
+		fillcolor="#F1F1F1";
+		"-itrans * Gradient(u)" -> {"-itrans", "Gradient(u)"};
+		ifluxes -> "-itrans * Gradient(u)"
+		"-itrans" -> itrans;
+		"Gradient(u)" -> u;
+		label = "computeInteriorFlux"
+	}
+
+	subgraph cluster_computeBoundaryFlux {
+		color=white;
+		style=filled;
+		fillcolor="#F1F1F1";
+		bfluxes -> "dir_fluxes Extend BoundaryFaces()" [maxlen = 2]
+	    "u_dirbdycells" -> "u On dir_cells";
+	    "u On dir_cells" -> {u, "dir_cells"}
+	    "dir_fluxes" -> "dir_trans * dir_sign * (u_dirbdycells - dir_val)"
+
+	    "dir_trans * dir_sign * (u_dirbdycells - dir_val)" -> {"dir_trans", "dir_sign * (u_dirbdycells - dir_val)"};
+	    "dir_sign * (u_dirbdycells - dir_val)" -> {"dir_sign", "(u_dirbdycells - dir_val)"};
+	    "(u_dirbdycells - dir_val)" -> {"u_dirbdycells", "dir_val"};
+
+	    "dir_fluxes Extend BoundaryFaces()" -> {"dir_fluxes", "BoundaryFaces()"};
+	    label = "computeBoundaryFlux"
+	}
+
+}

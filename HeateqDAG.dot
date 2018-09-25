@@ -1,0 +1,70 @@
+digraph DAG {
+	ordering=out;
+	node [fontsize=30];
+	edge [arrowhead=none]
+	# Variables / Addresses
+	"dir_trans" [style=filled, fillcolor="#AAAAFF"];
+	"dir_sign" [style=filled, fillcolor="#AAAAFF"];
+	itrans [style=filled, fillcolor="#AAAAFF"];
+	u [style=filled, fillcolor="#AAAAAA"];
+	"dir_cells" [style=filled, fillcolor="#AAAAFF"];
+	subgraph cluster_0 {
+		color=none
+		dt [style=filled, fillcolor="#AAAAAA"];
+		cv [style=filled, fillcolor="#AAAAFF"];
+		"t8" [label="/"];
+		vol [style=filled, fillcolor="#AAAAFF"];
+		"t7" [label="*"];
+	}
+	
+	u0 [style=filled, fillcolor="#AAAAAA"];
+
+
+	# Operation nodes
+	"t9" [label="–"]; 
+	"t1" [label="–"];
+	"t10" [label="+"];
+	"t2" [label="Gradient"];
+	"ifluxes" [label="*"];
+	"t3" [label="–"];
+	"t4" [label="*"];
+	"dir_fluxes" [label="*"];
+	"bfluxes" [label="Extend"];
+	"t5" [label="Extend"];
+	"t6" [label="Extend"];
+	"fluxes" [label="+"];
+	"t11" [label="Divergence"];
+	"u_dirbdycells" [label="On"];
+	"t12" [label="*"];
+
+
+
+	# Edges
+	"t4" -> {"dir_trans", "dir_sign"} [style=dashed];		# 6
+	"t1" -> itrans	[style=dashed];				# 1
+	"t2" -> u;						# 2
+	"t9" -> "u";				# 14
+	"t9" -> "u0";
+	"ifluxes" -> "t1" [style=dashed];				# 3
+	"ifluxes" -> "t2";
+	"u_dirbdycells" -> "u";	# 4
+	"u_dirbdycells" -> "dir_cells";
+	"t3" -> {"u_dirbdycells", "dir_val"};	# 5
+	"dir_fluxes" -> "t3";
+	"dir_fluxes" -> "t4" [style=dashed];									# 7
+	"bfluxes" -> {"dir_fluxes", "BoundaryFaces()"}; # 8
+	"t5" -> {"ifluxes", "AllFaces()"}; 	# 9
+	"t6" -> {"bfluxes", "AllFaces()"};	# 10
+	"fluxes" -> {"t5", "t6"};				# 11
+	"t10" -> "t8";
+	"t10" -> "t9";			# 15
+	"t11" -> "fluxes";		# 16
+	"t12" -> {"t10", "t11"};			# 17
+	"t7" -> {"cv", "vol"} [style=dashed];			# 12
+	"t8" -> "dt";				# 13
+	"t8" -> "t7" [style=dashed];
+
+	"dir_val" [style=filled, fillcolor="#AAAAFF"];
+	"BoundaryFaces()" [style=filled, fillcolor="#AAAAFF"];
+	"AllFaces()" [style=filled, fillcolor="#AAAAFF"];
+}
