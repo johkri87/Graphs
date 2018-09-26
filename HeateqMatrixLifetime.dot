@@ -39,6 +39,6 @@ digraph G {
 		color=none;
 		fluxes [label="{Interior fluxes + Boundary fluxes | AllFaces() | All fluxes}"];
 		divergence [label="{Divergence | AllCells() | Change in all cells}"];
-		"(dt / (cv * vol)) * A" [label="{(dt / (cv * vol))*A | AllCells() | Scale by timestep and conductivity}"];
+		"(dt / (cv * vol)) * A" [label="{(dt / (cv * vol))*A | AllCells() | Residual}"];
 	}
 }
