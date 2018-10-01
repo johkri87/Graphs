@@ -1,0 +1,62 @@
+digraph G {
+	node [];
+
+	main;
+	Extend;
+	extendToFull;
+	extendToSubset;
+	"operator*(mat)";
+	"operator*(coll)";
+	"operator+(coll)";
+	onFromFull;
+	gemmNnz;
+	gemm;
+	cudaFree;
+	"~CudaMatrix";
+	"~CudaArray";
+	"~CollOfScalar";
+	Gradient;
+	Divergence;
+	"Construct on CPU";
+	"memcpyDtoHAsync";
+	TwoNorm;
+
+	main -> TwoNorm;
+	main -> Extend;
+	main -> "operator*(coll)";
+	main -> Gradient;
+	main -> Divergence;
+	main -> "operator+(coll)";
+
+	Extend -> extendToFull;
+	Extend -> extendToSubset;
+	Gradient -> "Construct on CPU";
+	Divergence -> "Construct on CPU";
+	Gradient -> "operator*(mat)";
+	Divergence -> "operator*(mat)";
+	Gradient -> "~CudaMatrix";
+	Divergence -> "~CudaMatrix";
+	extendToSubset -> extendToFull;
+	extendToSubset -> onFromFull;
+	onFromFull -> "operator*(mat)";
+	extendToFull -> "operator*(mat)";
+	"operator*(mat)" -> gemm;
+	"operator*(mat)" -> gemmNnz;
+
+	"operator*(mat)" -> "~CudaArray";
+	"operator+(coll)" -> "~CudaMatrix";
+	extendToFull -> "~CudaMatrix"
+	"operator*(mat)" -> "~CudaMatrix";
+	"operator*(coll)" -> "~CudaMatrix";
+	"operator*(coll)" -> "~CudaArray";
+	"operator*(coll)" -> "~CollOfScalar";
+	gemmNnz -> "memcpyDtoHAsync";
+	gemmNnz -> cudaFree;
+	gemm -> cudaFree;
+	"~CudaMatrix" -> cudaFree;
+	"~CudaArray" -> cudaFree;
+	"~CollOfScalar" -> "~CudaArray";
+	"~CollOfScalar" -> "~CudaMatrix";
+	TwoNorm -> "operator*(coll)";
+
+}
